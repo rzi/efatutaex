@@ -26,7 +26,7 @@ var transporter = nodemailer.createTransport({
     user: "rafal_zietak@wp.pl",
     pass: "Klucze2019!",
   },
-  debug: true, // show debug output
+  //debug: true, // show debug output
   logger: true, // log information in console
 });
 
