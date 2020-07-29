@@ -64,7 +64,7 @@ app.post("/registration", (req, res) => {
       from: "rafal_zietak@wp.pl", // sender this is your email here
       to: `${req.body.Email}`, // receiver email2
       subject: "Weryfikacja konta w serwisie efaktura",
-      html: `<h1>Cześć, kliknij na link <h1><br><p> Link aktywacyjny.</p>
+      html: `<h1>Cześć, kliknij na link <h1><br>git sta<p> Link aktywacyjny.</p>
         <br><a href="http://localhost:3000/verification/?verify=${verify}">Kliknij aby aktywować twoje konto w serwisie efaktura.ct8.pl</a>`,
     };
     // store data
