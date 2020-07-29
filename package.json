@@ -1,7 +1,6 @@
 {
   "name": "efakturaex",
   "version": "1.0.0",
-  "description": "",
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js"
@@ -19,5 +18,15 @@
     "nodemailer": "^6.4.10",
     "nodemon": "^2.0.4"
   },
-  "proxy": "http://localhost:5000"
+  "proxy": "http://localhost:5000",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rzi/efatutaex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rzi/efatutaex/issues"
+  },
+  "homepage": "https://github.com/rzi/efatutaex#readme",
+  "description": ""
 }

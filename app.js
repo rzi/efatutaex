@@ -24,7 +24,7 @@ var transporter = nodemailer.createTransport({
   port: 587,
   auth: {
     user: "rafal_zietak@wp.pl",
-    pass: "Klucze2019!",
+    pass: "",
   },
   //debug: true, // show debug output
   logger: true, // log information in console
@@ -56,6 +56,14 @@ app.get("/", (req, res) => {
 
 // this is for registration
 app.post("/registration", (req, res) => {
+
+  if (!req.body.Email || !req.body.Password  || !req.body.Password2 ){
+
+    return res.json(
+      "błąd:  Musisz wypełnić wszystkie  trzy pola"
+    );
+  }
+
   // verification
   function Store(pass) {
     var verify = Math.floor(Math.random() * 10000000 + 1);
@@ -88,7 +96,7 @@ app.post("/registration", (req, res) => {
             };
             res.cookie("UserInfo", userdata);
             res.json(
-              "Mail z linkiem aktywacyjnym został wysłany, przedź do swojej skrzynki pocztowej i aktywuj konto"
+              "Mail z linkiem aktywacyjnym został wysłany <br> przedź do swojej skrzynki pocztowej i aktywuj konto"
             );
             console.log("Your Mail Send Successfully");
           }
@@ -149,7 +157,7 @@ app.get("/verification/", (req, res) => {
           activateAccount(result[0].verification);
         } else {
           res.send(
-            "<h1>Błąd rejestracji: Użytkownik o podanym adresie email już istnieje, nie można ponownie zarejestrować uzytkownika o takim samym emailu<br>Jeśłi zapomniałeś hasło kliknij w link reset hasła</h1>"
+            "<h2>Błąd rejestracji: Użytkownik o podanym adresie email już istnieje, nie można ponownie zarejestrować uzytkownika o takim samym emailu<br>Jeśli zapomniałeś hasło kliknij w link reset hasła  <a href='http://localhost:3000/'> tutaj w przyszłości będzie link do resetu hasła</a> <br><br><a href='http://localhost:3000'>Przejdź do strony głównej</a></h2>"
           );
         }
       }
@@ -183,24 +191,43 @@ app.post("/login", (req, res) => {
       verify: "true",
     });
   }
+  function LoginFailed() {
+    let userdata = {
+      email: `${req.body.Email}`,
+      verify: "FALSE",
+    };
+    res.cookie("UserInfo", userdata);
+    res.json({
+      verify: "false",
+    });
+  }
+
   connection.query(
     "SELECT * FROM verify WHERE email = ?",
-    email,
+    email ,     
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
         var hash = result[0].password;
-        console.log("hash" + hash);
-        bcrypt.compare(pass, hash, function (err, res) {
-          if (err) {
-            res.json({
-              msg: "ERROR",
-            });
-          } else {
-            LoginSuccess();
-          }
-        });
+        var active = result[0].active;
+        console.log("hash: " + hash);
+        console.log("active: " + active);
+        if (active){
+          bcrypt.compare(pass, hash, function (err, res) {
+            if (err) {
+            return res.json({
+                msg: "ERROR",
+              });                
+            }
+            LoginSuccess(); 
+            
+          });
+          
+        } else{
+          LoginFailed();
+        }
+        
       }
     }
   );
