@@ -63,8 +63,8 @@ app.post("/registration", (req, res) => {
     var mailOption = {
       from: "rafal_zietak@wp.pl", // sender this is your email here
       to: `${req.body.Email}`, // receiver email2
-      subject: "Weryfikacja konta wserwisie efaktura",
-      html: `<h1>Cześć, kliknij na link <h1><br><hr><p> Link aktywacyjny.</p>
+      subject: "Weryfikacja konta w serwisie efaktura",
+      html: `<h1>Cześć, kliknij na link <h1><br><p> Link aktywacyjny.</p>
         <br><a href="http://localhost:3000/verification/?verify=${verify}">Kliknij aby aktywować twoje konto w serwisie efaktura.ct8.pl</a>`,
     };
     // store data
@@ -125,7 +125,9 @@ app.get("/verification/", (req, res) => {
               verify: "TRUE",
             };
             res.cookie("UserInfo", userdata);
-            res.send("<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1>");
+            res.send(
+              "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://localhost:3000'>do strony głównej</a>"
+            );
           }
         }
       );
@@ -146,7 +148,9 @@ app.get("/verification/", (req, res) => {
         if (verify1 == verify2) {
           activateAccount(result[0].verification);
         } else {
-          res.send("<h1>Błąd rejestracji: Użytkownik o podanym adresie email już istnieje, nie można ponownie zarejestrować uzytkownika o takim samym emailu<br>Jeśłi zapomniałeś hasło kliknij w link reset hasła</h1>");
+          res.send(
+            "<h1>Błąd rejestracji: Użytkownik o podanym adresie email już istnieje, nie można ponownie zarejestrować uzytkownika o takim samym emailu<br>Jeśłi zapomniałeś hasło kliknij w link reset hasła</h1>"
+          );
         }
       }
     }
@@ -160,7 +164,6 @@ app.get("/dashboard", (req, res) => {
 app.get("/login", (req, res) => {
   res.render("login");
 });
-
 
 app.get("/registration", (req, res) => {
   res.render("registration");
@@ -188,7 +191,7 @@ app.post("/login", (req, res) => {
         console.log(err);
       } else {
         var hash = result[0].password;
-        console.log("hash" + hash)
+        console.log("hash" + hash);
         bcrypt.compare(pass, hash, function (err, res) {
           if (err) {
             res.json({
