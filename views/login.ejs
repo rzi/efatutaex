@@ -18,6 +18,8 @@
         <input type="text" placeholder="Password" id="password" name="password"><br>
         <input type="submit" value="Submit">
     </form>
+    <br>
+    <a href="http://localhost:3000/">do strony gółwnej</a>
 
     <script>
         document.getElementById('FormSub').addEventListener('submit', Send);
@@ -46,7 +48,7 @@
                         if (data.verify === "true") {
                             window.open('/dashboard', '_self');
                         } else {
-                            document.getElementById('msg').innerHTML = "Unsuccessful";
+                            document.getElementById('msg').innerHTML = "Niezgodne login lub hasło, lub użytkownik nie aktywowany";
                         }
                     })
 
