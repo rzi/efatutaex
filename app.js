@@ -5,7 +5,7 @@ const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 const app = express();
 const nodemailer = require("nodemailer");
-const fetch = require("node-fetch");
+//const fetch = require("node-fetch");
 
 // parser for forms undefined problem when submit form
 app.use(
@@ -24,7 +24,7 @@ var transporter = nodemailer.createTransport({
   port: 587,
   auth: {
     user: "rafal_zietak@wp.pl",
-    pass: "Klucze2020!3",
+    pass: "",
   },
   //debug: true, // show debug output
   logger: true, // log information in console
@@ -90,7 +90,7 @@ app.post("/registration", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata);
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.json(
               "Mail z linkiem aktywacyjnym został wysłany <br> przedź do swojej skrzynki pocztowej i aktywuj konto"
             );
@@ -112,7 +112,6 @@ app.post("/registration", (req, res) => {
     });
   });
 });
-
 // verification
 app.get("/verification/", (req, res) => {
   function activateAccount(verification) {
@@ -128,7 +127,7 @@ app.get("/verification/", (req, res) => {
               email: `${req.body.Email}`,
               verify: "TRUE",
             };
-            res.cookie("UserInfo", userdata);
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.send(
               "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://localhost:3000'>do strony głównej</a>"
             );
@@ -162,7 +161,6 @@ app.get("/verification/", (req, res) => {
     }
   );
 });
-
 app.get("/dashboard", (req, res) => {
   res.render("dashboard");
 });
@@ -184,7 +182,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "TRUE",
     };
-    res.cookie("UserInfo", userdata);
+    res.cookie("UserInfo", userdata, {maxAge: 360000});
     res.json({
       verify: "true",
     });
@@ -194,7 +192,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "FALSE",
     };
-    res.cookie("UserInfo", userdata);
+    res.cookie("UserInfo", userdata,  {maxAge: 360000});
     res.json({
       verify: "false",
     });
@@ -218,7 +216,11 @@ app.post("/login", (req, res) => {
                 msg: "ERROR",
               });
             }
-            LoginSuccess();
+            if (res) {
+              LoginSuccess();
+            }else {
+              LoginFailed();
+            }
           });
         } else {
           LoginFailed();
@@ -335,7 +337,7 @@ app.post("/newpassword", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata);
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.json(
               "Hasło do twojego konta zostało zmienione konto"
             );

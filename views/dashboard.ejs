@@ -12,12 +12,20 @@
         if (document.cookie === undefined || document.cookie === '') {
             window.open('/login', '_self');
         }
+
+
+        function logout() {
+            console.log("logout");
+            document.cookie ==="";
+            window.open('/login', '_self');
+        }
     </script>
 </head>
 
 <body>
     <h1>jesteś zarejestroewany</h1>
     <h2>i .... zalogowany w systemie eFaktura</h2>
+    <button onclick="logout()">wyloguj</button>
 </body>
 
 </html>
