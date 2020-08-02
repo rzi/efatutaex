@@ -24,7 +24,7 @@ var transporter = nodemailer.createTransport({
   port: 587,
   auth: {
     user: "rafal_zietak@wp.pl",
-    pass: "",
+    pass: "Klucze2020!3",
   },
   //debug: true, // show debug output
   logger: true, // log information in console
@@ -56,12 +56,8 @@ app.get("/", (req, res) => {
 
 // this is for registration
 app.post("/registration", (req, res) => {
-
-  if (!req.body.Email || !req.body.Password  || !req.body.Password2 ){
-
-    return res.json(
-      "błąd:  Musisz wypełnić wszystkie  trzy pola"
-    );
+  if (!req.body.Email || !req.body.Password || !req.body.Password2) {
+    return res.json("błąd:  Musisz wypełnić wszystkie  trzy pola");
   }
 
   // verification
@@ -153,6 +149,8 @@ app.get("/verification/", (req, res) => {
       } else {
         var verify1 = req.query.verify;
         var verify2 = result[0].verification;
+        console.log("verify1 " + verify1);
+        console.log("verify2 " + verify2);
         if (verify1 == verify2) {
           activateAccount(result[0].verification);
         } else {
@@ -204,7 +202,7 @@ app.post("/login", (req, res) => {
 
   connection.query(
     "SELECT * FROM verify WHERE email = ?",
-    email ,     
+    email,
     (err, result) => {
       if (err) {
         console.log(err);
@@ -213,24 +211,151 @@ app.post("/login", (req, res) => {
         var active = result[0].active;
         console.log("hash: " + hash);
         console.log("active: " + active);
-        if (active){
+        if (active) {
           bcrypt.compare(pass, hash, function (err, res) {
             if (err) {
-            return res.json({
+              return res.json({
                 msg: "ERROR",
-              });                
+              });
             }
-            LoginSuccess(); 
-            
+            LoginSuccess();
           });
-          
-        } else{
+        } else {
           LoginFailed();
         }
-        
       }
     }
   );
+});
+
+app.get("/reset", (req, res) => {
+  // after click reset activation link from mail
+  console.log("req.query.code: " + req.query.code);
+  console.log("req.query.email: " + req.query.email);
+  if (req.query.code) {
+    var sql = "SELECT * FROM verify WHERE email=?";
+    console.log("sql " + sql);
+
+    connection.query(sql, req.query.email, (err, result) => {
+      console.log("result[0].email " + result[0].email);
+      if (result[0].email == req.query.email) {
+        console.log("result");
+        return res.render("newPassword", {
+          email: result[0].email,
+          code: req.query.code,
+        });
+      }
+    });
+  } else {
+    res.render("reset");
+  }
+});
+
+app.post("/reset", (req, res) => {
+  // password resert
+  connection.query(
+    "SELECT verify.email, verify.active FROM verify WHERE email = ?",
+    req.body.Email,
+    (err, result) => {
+      function passwordReset(email, status) {
+        console.log("fn: passwordReset");
+        console.log("email " + email);
+        console.log("status " + status);
+        var code = Math.floor(Math.random() * 10000000 + 1);
+
+        var mailOption = {
+          from: "rafal_zietak@wp.pl", // sender this is your email here
+          to: `${req.body.Email}`, // receiver email2
+          subject: "reset hasła w serwisie efaktura",
+          html: `<h2>Cześć, kliknij na link aby zresetować hasło <h2>
+        <br><a href="http://localhost:3000/reset/?code=${code}&email=${req.body.Email}">Kliknij tutaj </a>`,
+        };
+        transporter.sendMail(mailOption, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            res.json({
+              msg: "link do resetu hasła został wysłany na twój email",
+            });
+          }
+        });
+      }
+
+      if (result) {
+        console.log("result: passwordReset");
+        console.log("email " + result[0].email);
+        console.log("status " + result[0].active);
+        if (result[0].active == "true") {
+          passwordReset(result[0].email, result[0].active);
+        } else {
+          res.json({
+            msg:
+              "ten email nie jest aktywowany w bazie , najpierw się zarejestruj i aktywuj ",
+          });
+        }
+      } else {
+        res.json({
+          msg: "błąd, błądz bazy danych",
+        });
+      }
+    }
+  );
+});
+app.post("/newpassword", (req, res) => {
+  if (!req.body.Email || !req.body.Password || !req.body.Password2 || !req.body.code) {
+    return res.json("błąd:  Musisz wypełnić wszystkie pola");
+  }
+
+  // verification
+  function Store(pass) {
+    var verify = req.body.code;
+
+    var mailOption = {
+      from: "rafal_zietak@wp.pl", // sender this is your email here
+      to: `${req.body.Email}`, // receiver email2
+      subject: "Zniana hasła w serwisie efaktura",
+      html: `<h1>Właśnie zostało zmienione hasło w serwisie efaktura. Jeśli to nie ty zmieniłeś zgłoś to do administratora systemu<h1>`,
+    };
+    // store data
+
+    var userData = {
+      email: req.body.Email,
+      password: pass,
+      verification: verify,
+    };
+
+    connection.query("UPDATE verify SET ?", userData, (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        transporter.sendMail(mailOption, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            let userdata = {
+              email: `${req.body.Email}`,
+            };
+            res.cookie("UserInfo", userdata);
+            res.json(
+              "Hasło do twojego konta zostało zmienione konto"
+            );
+            console.log("Your Mail Send Successfully");
+          }
+        });
+
+        console.log("Data Successfully insert");
+      }
+    });
+  }
+  bcrypt.genSalt(10, function (err, salt) {
+    bcrypt.hash(req.body.Password, salt, function (err, hash) {
+      if (err) {
+        console.log(err);
+      } else {
+        Store(hash);
+      }
+    });
+  });
 });
 
 app.listen(3000);

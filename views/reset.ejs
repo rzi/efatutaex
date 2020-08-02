@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Reset hasła</title>
+</head>
+
+<body>
+    <h1>Login</h1>
+    <h1 id="msg"></h1>
+    <form id="FormSub">
+        <label for="email">Email : </label>
+        <input type="text" placeholder="Email" id="email" name="email"><br>
+        <br>
+        <input type="submit" value="zresetuj hasło">
+    </form>
+    <br>
+    <a href="http://localhost:3000/">do strony gółwnej</a>
+
+    <script>
+        document.getElementById('FormSub').addEventListener('submit', Send);
+        console.log(" jestem w reset")
+
+        function Send(e) {
+            console.log(" jestem w send resetu");
+            e.preventDefault();
+            var email = document.querySelector('#email').value;
+            
+            if (email.length > 1 ) {
+                console.log(" jestem w fetch resetu");
+                fetch('http://localhost:3000/reset', {
+                        method: 'post',
+                        headers: {
+                            'Accept': 'application/json, text/plain, */*',
+                            'Content-type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            Email: email
+                        })
+                    })
+                    .then((res) => res.json())
+                    .then(data => {
+                        
+                            document.getElementById('msg').innerHTML = data.msg;
+                      
+                    })
+
+            } else {
+                document.getElementById('msg').innerHTML = "ERROR EMAIL";
+            }
+        }
+    </script>
+</body>
+
+</html>
