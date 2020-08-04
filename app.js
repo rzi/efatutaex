@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const app = express();
 const nodemailer = require("nodemailer");
 const fetch = require("node-fetch");
+const { json } = require("body-parser");
 
 // parser for forms undefined problem when submit form
 app.use(
@@ -24,7 +25,7 @@ var transporter = nodemailer.createTransport({
   port: 587,
   auth: {
     user: "rafal_zietak@wp.pl",
-    pass: "Klucze2020!3",
+    pass: "",
   },
   //debug: true, // show debug output
   logger: true, // log information in console
@@ -115,11 +116,11 @@ app.post("/registration", (req, res) => {
 
 // verification
 app.get("/verification/", (req, res) => {
-  function activateAccount(verification) {
-    if (verification == req.query.verify) {
+  function activateAccount(verifyFromLink) {
+    if (verifyFromDB == verifyFromLink) {
       connection.query(
-        "UPDATE verify SET active = ?",
-        "true",
+        "UPDATE verify SET active = 'true' WHERE verification =?" ,
+        verifyFromLink ,
         (err, result) => {
           if (err) {
             console.log(err);
@@ -144,15 +145,16 @@ app.get("/verification/", (req, res) => {
     "SELECT verify.verification FROM verify WHERE email = ?",
     req.cookies.UserInfo.email,
     (err, result) => {
+      console.log("Object.keys(result).length: " + Object.keys(result).length)
       if (err) {
         console.log(err);
       } else {
-        var verify1 = req.query.verify;
-        var verify2 = result[0].verification;
-        console.log("verify1 " + verify1);
-        console.log("verify2 " + verify2);
-        if (verify1 == verify2) {
-          activateAccount(result[0].verification);
+        var verifyFromLink = req.query.verify;
+        var verifyFromDB = result[0].verification;
+        console.log("verifyFromLink " + verifyFromLink);
+        console.log("verifyFromDB " + verifyFromDB);
+        if (verifyFromLink == verifyFromDB) {
+          activateAccount(verifyFromLink);
         } else {
           res.send(
             "<h2>Błąd rejestracji: Użytkownik o podanym adresie email już istnieje, nie można ponownie zarejestrować uzytkownika o takim samym emailu<br>Jeśli zapomniałeś hasło kliknij w link reset hasła  <a href='http://localhost:3000/'> tutaj w przyszłości będzie link do resetu hasła</a> <br><br><a href='http://localhost:3000'>Przejdź do strony głównej</a></h2>"
@@ -162,19 +164,15 @@ app.get("/verification/", (req, res) => {
     }
   );
 });
-
 app.get("/dashboard", (req, res) => {
   res.render("dashboard");
 });
-
 app.get("/login", (req, res) => {
   res.render("login");
 });
-
 app.get("/registration", (req, res) => {
   res.render("registration");
 });
-
 app.post("/login", (req, res) => {
   var email = req.body.Email;
   var pass = req.body.Password;
@@ -205,29 +203,48 @@ app.post("/login", (req, res) => {
     email,
     (err, result) => {
       if (err) {
-        console.log(err);
+        //console.log(err);
+        console.log("dane błędu: " + JSON.stringify(err));
+        return res.json({
+          msg: "ERROR",
+        });
       } else {
-        var hash = result[0].password;
-        var active = result[0].active;
-        console.log("hash: " + hash);
-        console.log("active: " + active);
-        if (active) {
-          bcrypt.compare(pass, hash, function (err, res) {
-            if (err) {
-              return res.json({
-                msg: "ERROR",
-              });
-            }
-            LoginSuccess();
+        console.log("dane z bazy: " + JSON.stringify(result));
+
+        if (Object.keys(result).length) {
+          var hash = result[0].password;
+          var active = result[0].active;
+          console.log("hash: " + hash);
+          console.log("active: " + active);
+          if (active) {
+            bcrypt.compare(pass, hash, function (err, res) {
+              if (err) {
+                return res.json({
+                  msg: "ERROR",
+                });
+              }
+              if (res==true){
+                LoginSuccess();
+              } else {
+                LoginFailed();
+              }
+              
+            });
+          } else {
+            LoginFailed();
+          }
+        } else{
+          console.log("błąd:  zły adres email");
+           res.json({
+            msg: "ERROR",
           });
-        } else {
-          LoginFailed();
+
         }
+
       }
     }
   );
 });
-
 app.get("/reset", (req, res) => {
   // after click reset activation link from mail
   console.log("req.query.code: " + req.query.code);
@@ -250,7 +267,6 @@ app.get("/reset", (req, res) => {
     res.render("reset");
   }
 });
-
 app.post("/reset", (req, res) => {
   // password resert
   connection.query(
@@ -302,7 +318,12 @@ app.post("/reset", (req, res) => {
   );
 });
 app.post("/newpassword", (req, res) => {
-  if (!req.body.Email || !req.body.Password || !req.body.Password2 || !req.body.code) {
+  if (
+    !req.body.Email ||
+    !req.body.Password ||
+    !req.body.Password2 ||
+    !req.body.code
+  ) {
     return res.json("błąd:  Musisz wypełnić wszystkie pola");
   }
 
@@ -336,9 +357,7 @@ app.post("/newpassword", (req, res) => {
               email: `${req.body.Email}`,
             };
             res.cookie("UserInfo", userdata);
-            res.json(
-              "Hasło do twojego konta zostało zmienione konto"
-            );
+            res.json("Hasło do twojego konta zostało zmienione konto");
             console.log("Your Mail Send Successfully");
           }
         });
@@ -357,5 +376,4 @@ app.post("/newpassword", (req, res) => {
     });
   });
 });
-
 app.listen(3000);
