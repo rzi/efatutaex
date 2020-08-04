@@ -5,8 +5,12 @@ const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 const app = express();
 const nodemailer = require("nodemailer");
+<<<<<<< HEAD
 const fetch = require("node-fetch");
 const { json } = require("body-parser");
+=======
+//const fetch = require("node-fetch");
+>>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
 
 // parser for forms undefined problem when submit form
 app.use(
@@ -91,7 +95,7 @@ app.post("/registration", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata);
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.json(
               "Mail z linkiem aktywacyjnym został wysłany <br> przedź do swojej skrzynki pocztowej i aktywuj konto"
             );
@@ -113,7 +117,6 @@ app.post("/registration", (req, res) => {
     });
   });
 });
-
 // verification
 app.get("/verification/", (req, res) => {
   function activateAccount(verifyFromLink) {
@@ -129,7 +132,7 @@ app.get("/verification/", (req, res) => {
               email: `${req.body.Email}`,
               verify: "TRUE",
             };
-            res.cookie("UserInfo", userdata);
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.send(
               "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://localhost:3000'>do strony głównej</a>"
             );
@@ -182,7 +185,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "TRUE",
     };
-    res.cookie("UserInfo", userdata);
+    res.cookie("UserInfo", userdata, {maxAge: 360000});
     res.json({
       verify: "true",
     });
@@ -192,7 +195,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "FALSE",
     };
-    res.cookie("UserInfo", userdata);
+    res.cookie("UserInfo", userdata,  {maxAge: 360000});
     res.json({
       verify: "false",
     });
@@ -209,6 +212,7 @@ app.post("/login", (req, res) => {
           msg: "ERROR",
         });
       } else {
+<<<<<<< HEAD
         console.log("dane z bazy: " + JSON.stringify(result));
 
         if (Object.keys(result).length) {
@@ -237,6 +241,24 @@ app.post("/login", (req, res) => {
           console.log("błąd:  zły adres email");
            res.json({
             msg: "ERROR",
+=======
+        var hash = result[0].password;
+        var active = result[0].active;
+        console.log("hash: " + hash);
+        console.log("active: " + active);
+        if (active) {
+          bcrypt.compare(pass, hash, function (err, res) {
+            if (err) {
+              return res.json({
+                msg: "ERROR",
+              });
+            }
+            if (res) {
+              LoginSuccess();
+            }else {
+              LoginFailed();
+            }
+>>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
           });
 
         }
@@ -356,8 +378,15 @@ app.post("/newpassword", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
+<<<<<<< HEAD
             res.cookie("UserInfo", userdata);
             res.json("Hasło do twojego konta zostało zmienione konto");
+=======
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
+            res.json(
+              "Hasło do twojego konta zostało zmienione konto"
+            );
+>>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
             console.log("Your Mail Send Successfully");
           }
         });
