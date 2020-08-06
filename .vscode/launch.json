@@ -5,6 +5,22 @@
   "version": "0.2.0",
   "configurations": [
   
+<<<<<<< HEAD
+=======
+    {
+      "name": "Launch Chrome",
+      "request": "launch",
+      "type": "pwa-chrome",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+
+
+  
+
+
+
+>>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
     {
       "type": "pwa-chrome",
       "request": "launch",

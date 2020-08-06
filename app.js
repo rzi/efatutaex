@@ -5,7 +5,12 @@ const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 const app = express();
 const nodemailer = require("nodemailer");
+<<<<<<< HEAD
 const fetch = require("node-fetch");
+const { json } = require("body-parser");
+=======
+//const fetch = require("node-fetch");
+>>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
 
 // parser for forms undefined problem when submit form
 app.use(
@@ -90,7 +95,7 @@ app.post("/registration", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata);
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.json(
               "Mail z linkiem aktywacyjnym został wysłany <br> przedź do swojej skrzynki pocztowej i aktywuj konto"
             );
@@ -112,14 +117,13 @@ app.post("/registration", (req, res) => {
     });
   });
 });
-
 // verification
 app.get("/verification/", (req, res) => {
-  function activateAccount(verification) {
-    if (verification == req.query.verify) {
+  function activateAccount(verifyFromLink) {
+    if (verifyFromDB == verifyFromLink) {
       connection.query(
-        "UPDATE verify SET active = ?",
-        "true",
+        "UPDATE verify SET active = 'true' WHERE verification =?" ,
+        verifyFromLink ,
         (err, result) => {
           if (err) {
             console.log(err);
@@ -128,7 +132,7 @@ app.get("/verification/", (req, res) => {
               email: `${req.body.Email}`,
               verify: "TRUE",
             };
-            res.cookie("UserInfo", userdata);
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.send(
               "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://localhost:3000'>do strony głównej</a>"
             );
@@ -144,13 +148,16 @@ app.get("/verification/", (req, res) => {
     "SELECT verify.verification FROM verify WHERE email = ?",
     req.cookies.UserInfo.email,
     (err, result) => {
+      console.log("Object.keys(result).length: " + Object.keys(result).length)
       if (err) {
         console.log(err);
       } else {
-        var verify1 = req.query.verify;
-        var verify2 = result[0].verification;
-        if (verify1 == verify2) {
-          activateAccount(result[0].verification);
+        var verifyFromLink = req.query.verify;
+        var verifyFromDB = result[0].verification;
+        console.log("verifyFromLink " + verifyFromLink);
+        console.log("verifyFromDB " + verifyFromDB);
+        if (verifyFromLink == verifyFromDB) {
+          activateAccount(verifyFromLink);
         } else {
           res.send(
             `                               `
@@ -160,19 +167,15 @@ app.get("/verification/", (req, res) => {
     }
   );
 });
-
 app.get("/dashboard", (req, res) => {
   res.render("dashboard");
 });
-
 app.get("/login", (req, res) => {
   res.render("login");
 });
-
 app.get("/registration", (req, res) => {
   res.render("registration");
 });
-
 app.post("/login", (req, res) => {
   var email = req.body.Email;
   var pass = req.body.Password;
@@ -182,7 +185,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "TRUE",
     };
-    res.cookie("UserInfo", userdata);
+    res.cookie("UserInfo", userdata, {maxAge: 360000});
     res.json({
       verify: "true",
     });
@@ -193,7 +196,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "FALSE",
     };
-    res.cookie("UserInfo", userdata);
+    res.cookie("UserInfo", userdata,  {maxAge: 360000});
     res.json({
       verify: "false",
     });
@@ -204,13 +207,51 @@ app.post("/login", (req, res) => {
     email,
     (err, result) => {
       if (err) {
-        console.log(err);
+        //console.log(err);
+        console.log("dane błędu: " + JSON.stringify(err));
+        return res.json({
+          msg: "ERROR",
+        });
       } else {
+<<<<<<< HEAD
+        console.log("dane z bazy: " + JSON.stringify(result));
+
+        if (Object.keys(result).length) {
+          var hash = result[0].password;
+          var active = result[0].active;
+          console.log("hash: " + hash);
+          console.log("active: " + active);
+          if (active) {
+            bcrypt.compare(pass, hash, function (err, res) {
+              if (err) {
+                return res.json({
+                  msg: "ERROR",
+                });
+              }
+              if (res==true){
+                LoginSuccess();
+              } else {
+                LoginFailed();
+              }
+              
+            });
+          } else {
+            LoginFailed();
+          }
+        } else{
+          console.log("błąd:  zły adres email");
+           res.json({
+            msg: "ERROR",
+=======
         var hash = result[0].password;
         var active = result[0].active;
         console.log("hash: " + hash);
         console.log("active: " + active);
+<<<<<<< HEAD
         if (active == "true") {
+=======
+        if (active) {
+>>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
           bcrypt.compare(pass, hash, function (err, res) {
             if (err) {
               return res.json({
@@ -218,6 +259,7 @@ app.post("/login", (req, res) => {
               });
             }
             if (res) {
+<<<<<<< HEAD
               console.log("succes");
               LoginSuccess();
             } else {
@@ -230,9 +272,157 @@ app.post("/login", (req, res) => {
             msg: "ERROR",
           });
         }
+=======
+              LoginSuccess();
+            }else {
+              LoginFailed();
+            }
+>>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
+          });
+
+        }
+
+>>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
       }
     }
   );
 });
+app.get("/reset", (req, res) => {
+  // after click reset activation link from mail
+  console.log("req.query.code: " + req.query.code);
+  console.log("req.query.email: " + req.query.email);
+  if (req.query.code) {
+    var sql = "SELECT * FROM verify WHERE email=?";
+    console.log("sql " + sql);
 
+    connection.query(sql, req.query.email, (err, result) => {
+      console.log("result[0].email " + result[0].email);
+      if (result[0].email == req.query.email) {
+        console.log("result");
+        return res.render("newPassword", {
+          email: result[0].email,
+          code: req.query.code,
+        });
+      }
+    });
+  } else {
+    res.render("reset");
+  }
+});
+app.post("/reset", (req, res) => {
+  // password resert
+  connection.query(
+    "SELECT verify.email, verify.active FROM verify WHERE email = ?",
+    req.body.Email,
+    (err, result) => {
+      function passwordReset(email, status) {
+        console.log("fn: passwordReset");
+        console.log("email " + email);
+        console.log("status " + status);
+        var code = Math.floor(Math.random() * 10000000 + 1);
+
+        var mailOption = {
+          from: "rafal_zietak@wp.pl", // sender this is your email here
+          to: `${req.body.Email}`, // receiver email2
+          subject: "reset hasła w serwisie efaktura",
+          html: `<h2>Cześć, kliknij na link aby zresetować hasło <h2>
+        <br><a href="http://localhost:3000/reset/?code=${code}&email=${req.body.Email}">Kliknij tutaj </a>`,
+        };
+        transporter.sendMail(mailOption, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            res.json({
+              msg: "link do resetu hasła został wysłany na twój email",
+            });
+          }
+        });
+      }
+
+      if (result) {
+        console.log("result: passwordReset");
+        console.log("email " + result[0].email);
+        console.log("status " + result[0].active);
+        if (result[0].active == "true") {
+          passwordReset(result[0].email, result[0].active);
+        } else {
+          res.json({
+            msg:
+              "ten email nie jest aktywowany w bazie , najpierw się zarejestruj i aktywuj ",
+          });
+        }
+      } else {
+        res.json({
+          msg: "błąd, błądz bazy danych",
+        });
+      }
+    }
+  );
+});
+app.post("/newpassword", (req, res) => {
+  if (
+    !req.body.Email ||
+    !req.body.Password ||
+    !req.body.Password2 ||
+    !req.body.code
+  ) {
+    return res.json("błąd:  Musisz wypełnić wszystkie pola");
+  }
+
+  // verification
+  function Store(pass) {
+    var verify = req.body.code;
+
+    var mailOption = {
+      from: "rafal_zietak@wp.pl", // sender this is your email here
+      to: `${req.body.Email}`, // receiver email2
+      subject: "Zniana hasła w serwisie efaktura",
+      html: `<h1>Właśnie zostało zmienione hasło w serwisie efaktura. Jeśli to nie ty zmieniłeś zgłoś to do administratora systemu<h1>`,
+    };
+    // store data
+
+    var userData = {
+      email: req.body.Email,
+      password: pass,
+      verification: verify,
+    };
+
+    connection.query("UPDATE verify SET ?", userData, (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        transporter.sendMail(mailOption, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            let userdata = {
+              email: `${req.body.Email}`,
+            };
+<<<<<<< HEAD
+            res.cookie("UserInfo", userdata);
+            res.json("Hasło do twojego konta zostało zmienione konto");
+=======
+            res.cookie("UserInfo", userdata, {maxAge: 360000});
+            res.json(
+              "Hasło do twojego konta zostało zmienione konto"
+            );
+>>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
+            console.log("Your Mail Send Successfully");
+          }
+        });
+
+        console.log("Data Successfully insert");
+      }
+    });
+  }
+  bcrypt.genSalt(10, function (err, salt) {
+    bcrypt.hash(req.body.Password, salt, function (err, hash) {
+      if (err) {
+        console.log(err);
+      } else {
+        Store(hash);
+      }
+    });
+  });
+});
 app.listen(3000);
