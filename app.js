@@ -56,12 +56,8 @@ app.get("/", (req, res) => {
 
 // this is for registration
 app.post("/registration", (req, res) => {
-
-  if (!req.body.Email || !req.body.Password  || !req.body.Password2 ){
-
-    return res.json(
-      "błąd:  Musisz wypełnić wszystkie  trzy pola"
-    );
+  if (!req.body.Email || !req.body.Password || !req.body.Password2) {
+    return res.json("błąd:  Musisz wypełnić wszystkie  trzy pola");
   }
 
   // verification
@@ -157,7 +153,7 @@ app.get("/verification/", (req, res) => {
           activateAccount(result[0].verification);
         } else {
           res.send(
-            "<h2>Błąd rejestracji: Użytkownik o podanym adresie email już istnieje, nie można ponownie zarejestrować uzytkownika o takim samym emailu<br>Jeśli zapomniałeś hasło kliknij w link reset hasła  <a href='http://localhost:3000/'> tutaj w przyszłości będzie link do resetu hasła</a> <br><br><a href='http://localhost:3000'>Przejdź do strony głównej</a></h2>"
+            `                               `
           );
         }
       }
@@ -191,6 +187,7 @@ app.post("/login", (req, res) => {
       verify: "true",
     });
   }
+
   function LoginFailed() {
     let userdata = {
       email: `${req.body.Email}`,
@@ -204,7 +201,7 @@ app.post("/login", (req, res) => {
 
   connection.query(
     "SELECT * FROM verify WHERE email = ?",
-    email ,     
+    email,
     (err, result) => {
       if (err) {
         console.log(err);
@@ -213,21 +210,26 @@ app.post("/login", (req, res) => {
         var active = result[0].active;
         console.log("hash: " + hash);
         console.log("active: " + active);
-        if (active){
+        if (active == "true") {
           bcrypt.compare(pass, hash, function (err, res) {
             if (err) {
-            return res.json({
+              return res.json({
                 msg: "ERROR",
-              });                
+              });
             }
-            LoginSuccess(); 
-            
+            if (res) {
+              console.log("succes");
+              LoginSuccess();
+            } else {
+              LoginFailed();
+              console.log("failed");
+            }
           });
-          
-        } else{
-          LoginFailed();
+        } else {
+          return res.json({
+            msg: "ERROR",
+          });
         }
-        
       }
     }
   );
