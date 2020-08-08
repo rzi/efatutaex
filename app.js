@@ -82,7 +82,7 @@ app.post("/registration", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata, {maxAge: 360000});
+            res.cookie("UserInfo", userdata, { maxAge: 360000 });
             res.json(
               "Mail z linkiem aktywacyjnym został wysłany <br> przedź do swojej skrzynki pocztowej i aktywuj konto"
             );
@@ -107,28 +107,24 @@ app.post("/registration", (req, res) => {
 // verification
 app.get("/verification/", (req, res) => {
   function activateAccount(verifyFromLink) {
-    if (verifyFromDB == verifyFromLink) {
-      connection.query(
-        "UPDATE verify SET active = 'true' WHERE verification =?" ,
-        verifyFromLink ,
-        (err, result) => {
-          if (err) {
-            console.log(err);
-          } else {
-            let userdata = {
-              email: `${req.body.Email}`,
-              verify: "TRUE",
-            };
-            res.cookie("UserInfo", userdata, {maxAge: 360000});
-            res.send(
-              "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://localhost:3000'>do strony głównej</a>"
-            );
-          }
+    connection.query(
+      "UPDATE verify SET active = 'true' WHERE verification =?",
+      verifyFromLink,
+      (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          let userdata = {
+            email: `${req.body.Email}`,
+            verify: "TRUE",
+          };
+          res.cookie("UserInfo", userdata, { maxAge: 360000 });
+          res.send(
+            "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://localhost:3000'>do strony głównej</a>"
+          );
         }
-      );
-    } else {
-      res.send("<h1>błąd aktywacji: nie zgodny adres email</h1>");
-    }
+      }
+    );
   }
   console.log("req.cookies.UserInfo.email " + req.cookies.UserInfo.email);
   connection.query(
@@ -172,7 +168,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "TRUE",
     };
-    res.cookie("UserInfo", userdata, {maxAge: 360000});
+    res.cookie("UserInfo", userdata, { maxAge: 360000 });
     res.json({
       verify: "true",
     });
@@ -183,7 +179,7 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "FALSE",
     };
-    res.cookie("UserInfo", userdata,  {maxAge: 360000});
+    res.cookie("UserInfo", userdata, { maxAge: 360000 });
     res.json({
       verify: "false",
     });
@@ -225,12 +221,12 @@ app.post("/login", (req, res) => {
               msg: "ERROR",
             });
           }
-              LoginSuccess();
-        }else {
-              LoginFailed();
+          LoginSuccess();
+        } else {
+          LoginFailed();
         }
-      }; 
-    });       
+      };
+    });
 });
 app.get("/reset", (req, res) => {
   // after click reset activation link from mail
@@ -319,7 +315,7 @@ app.post("/newpassword", (req, res) => {
     var verify = req.body.code;
 
     var mailOption = {
-      from: "rafal_zietak@wp.pl", // sender this is your email here
+      from: "efaktura@rzi.ct8.pl", // sender this is your email here
       to: `${req.body.Email}`, // receiver email2
       subject: "Zniana hasła w serwisie efaktura",
       html: `<h1>Właśnie zostało zmienione hasło w serwisie efaktura. Jeśli to nie ty zmieniłeś zgłoś to do administratora systemu<h1>`,
@@ -343,7 +339,7 @@ app.post("/newpassword", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata, {maxAge: 360000});
+            res.cookie("UserInfo", userdata, { maxAge: 360000 });
             res.json(
               "Hasło do twojego konta zostało zmienione konto"
             );
