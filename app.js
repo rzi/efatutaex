@@ -18,11 +18,11 @@ app.use(bodyParser.json());
 app.set("view engine", "ejs");
 app.set("views", "views");
 var transporter = nodemailer.createTransport({
-  host: "smtp.wp.pl",
+  host: "s1.ct8.pl",
   port: 587,
   auth: {
-    user: "rafal_zietak@wp.pl",
-    pass: "",
+    user: "efaktura@rzi.ct8.pl",
+    pass: "Klucze2020!3",
   },
   //debug: true, // show debug output
   logger: true, // log information in console
@@ -57,7 +57,7 @@ app.post("/registration", (req, res) => {
     var verify = Math.floor(Math.random() * 10000000 + 1);
 
     var mailOption = {
-      from: "rafal_zietak@wp.pl", // sender this is your email here
+      from: "efaktura@rzi.ct8.pl", // sender this is your email here
       to: `${req.body.Email}`, // receiver email2
       subject: "Weryfikacja konta w serwisie efaktura",
       html: `<h1>Cześć, kliknij na link <h1><br>git sta<p> Link aktywacyjny.</p>
@@ -267,7 +267,7 @@ app.post("/reset", (req, res) => {
         var code = Math.floor(Math.random() * 10000000 + 1);
 
         var mailOption = {
-          from: "rafal_zietak@wp.pl", // sender this is your email here
+          from: "efaktura@rzi.ct8.pl", // sender this is your email here
           to: `${req.body.Email}`, // receiver email2
           subject: "reset hasła w serwisie efaktura",
           html: `<h2>Cześć, kliknij na link aby zresetować hasło <h2>
