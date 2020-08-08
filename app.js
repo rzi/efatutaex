@@ -49,13 +49,47 @@ app.get("/", (req, res) => {
 });
 // this is for registration
 app.post("/registration", (req, res) => {
+  var verify = Math.floor(Math.random() * 10000000 + 1);
+  var userData = {
+    email: req.body.Email,
+    password: req.body.Password,
+    verification: verify,
+  };
   if (!req.body.Email || !req.body.Password || !req.body.Password2) {
     return res.json("błąd:  Musisz wypełnić wszystkie  trzy pola");
-  }
-  // verification
-  function Store(pass) {
-    var verify = Math.floor(Math.random() * 10000000 + 1);
-
+  } 
+  bcrypt.genSalt(10, function (err, salt) {
+    bcrypt.hash(req.body.Password, salt, function (err, hash) {
+      console.log("req.body.Email : " +req.body.Email)
+      if (err) {
+        console.log(err);
+      } else {
+        connection.query(
+          "SELECT * FROM verify WHERE email = ?",
+          req.body.Email,
+          (err, result) => {
+            if (err) {
+              console.log("dane błędu wybierania z DB: " + JSON.stringify(err));
+              return res.json({
+                msg: "ERROR: dane błędu wybierania z DB",
+              });
+            } else {
+              console.log ("result[0].length: "+ JSON.stringify(result.length))
+              console.log ("result[0].email: "+ JSON.stringify(result))
+              if (result.length >0) {
+                return res.json({
+                  msg: "email już istnieje w DB",
+                });
+              } else {
+                Store(hash);
+              }
+            }
+        });
+      }
+    });
+  });
+   // verification
+   function Store(pass) {
     var mailOption = {
       from: "efaktura@rzi.ct8.pl", // sender this is your email here
       to: `${req.body.Email}`, // receiver email2
@@ -64,13 +98,7 @@ app.post("/registration", (req, res) => {
         <br><a href="http://localhost:3000/verification/?verify=${verify}">Kliknij aby aktywować twoje konto w serwisie efaktura.ct8.pl</a>`,
     };
     // store data
-
-    var userData = {
-      email: req.body.Email,
-      password: pass,
-      verification: verify,
-    };
-
+    userData.password =pass;
     connection.query("INSERT INTO verify SET ?", userData, (err, result) => {
       if (err) {
         console.log(err);
@@ -89,20 +117,10 @@ app.post("/registration", (req, res) => {
             console.log("Your Mail Send Successfully");
           }
         });
-
         console.log("Data Successfully insert");
       }
     });
   }
-  bcrypt.genSalt(10, function (err, salt) {
-    bcrypt.hash(req.body.Password, salt, function (err, hash) {
-      if (err) {
-        console.log(err);
-      } else {
-        Store(hash);
-      }
-    });
-  });
 });
 // verification
 app.get("/verification/", (req, res) => {
@@ -142,8 +160,7 @@ app.get("/verification/", (req, res) => {
         if (verifyFromLink == verifyFromDB) {
           activateAccount(verifyFromLink);
         } else {
-          res.send(
-            `                               `
+          res.send("nie zgodny numer weryfikacyjny"
           );
         }
       }
@@ -153,37 +170,15 @@ app.get("/verification/", (req, res) => {
 app.get("/dashboard", (req, res) => {
   res.render("dashboard");
 });
-app.get("/login", (req, res) => {
-  res.render("login");
-});
 app.get("/registration", (req, res) => {
   res.render("registration");
+});
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 app.post("/login", (req, res) => {
   var email = req.body.Email;
   var pass = req.body.Password;
-
-  function LoginSuccess() {
-    let userdata = {
-      email: `${req.body.Email}`,
-      verify: "TRUE",
-    };
-    res.cookie("UserInfo", userdata, { maxAge: 360000 });
-    res.json({
-      verify: "true",
-    });
-  }
-
-  function LoginFailed() {
-    let userdata = {
-      email: `${req.body.Email}`,
-      verify: "FALSE",
-    };
-    res.cookie("UserInfo", userdata, { maxAge: 360000 });
-    res.json({
-      verify: "false",
-    });
-  }
 
   connection.query(
     "SELECT * FROM verify WHERE email = ?",
@@ -227,6 +222,27 @@ app.post("/login", (req, res) => {
         }
       };
     });
+
+  function LoginSuccess() {
+    let userdata = {
+      email: `${req.body.Email}`,
+      verify: "TRUE",
+    };
+    res.cookie("UserInfo", userdata, { maxAge: 360000 });
+    res.json({
+      verify: "true",
+    });
+  }
+  function LoginFailed() {
+    let userdata = {
+      email: `${req.body.Email}`,
+      verify: "FALSE",
+    };
+    res.cookie("UserInfo", userdata, { maxAge: 360000 });
+    res.json({
+      verify: "false",
+    });
+  }
 });
 app.get("/reset", (req, res) => {
   // after click reset activation link from mail
