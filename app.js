@@ -199,50 +199,38 @@ app.post("/login", (req, res) => {
         return res.json({
           msg: "ERROR",
         });
-      } else
-       {
+      } else {
         var hash = result[0].password;
         var active = result[0].active;
         console.log("hash: " + hash);
         console.log("active: " + active);
-<<<<<<< HEAD
         if (active == "true") {
-=======
-        if (active) {
->>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
-          bcrypt.compare(pass, hash, function (err, res) {
-            if (err) {
-              return res.json({
-                msg: "ERROR",
-              });
-            }
-            if (res) {
-<<<<<<< HEAD
-              console.log("succes");
+          if (active) {
+            bcrypt.compare(pass, hash, function (err, res) {
+              if (err) {
+                return res.json({
+                  msg: "ERROR",
+                });
+              }
+              if (res) {
+                console.log("succes");
+                LoginSuccess();
+              } else {
+                LoginFailed();
+                console.log("failed");
+              }
+            });
+          } else {
+            return res.json({
+              msg: "ERROR",
+            });
+          }
               LoginSuccess();
-            } else {
+        }else {
               LoginFailed();
-              console.log("failed");
-            }
-          });
-        } else {
-          return res.json({
-            msg: "ERROR",
-          });
         }
-=======
-              LoginSuccess();
-            }else {
-              LoginFailed();
-            }
-          });
-
-        }
-
->>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
-      }
-    }
-  );
+      }; 
+    });       
 });
 app.get("/reset", (req, res) => {
   // after click reset activation link from mail
