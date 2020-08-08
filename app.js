@@ -5,12 +5,7 @@ const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 const app = express();
 const nodemailer = require("nodemailer");
-<<<<<<< HEAD
-const fetch = require("node-fetch");
 const { json } = require("body-parser");
-=======
-//const fetch = require("node-fetch");
->>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
 
 // parser for forms undefined problem when submit form
 app.use(
@@ -19,11 +14,9 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-
 // views
 app.set("view engine", "ejs");
 app.set("views", "views");
-
 var transporter = nodemailer.createTransport({
   host: "smtp.wp.pl",
   port: 587,
@@ -34,7 +27,6 @@ var transporter = nodemailer.createTransport({
   //debug: true, // show debug output
   logger: true, // log information in console
 });
-
 transporter.verify(function (error, success) {
   if (error) {
     console.log(error);
@@ -49,22 +41,17 @@ const connection = mysql.createConnection({
   password: "Bazapi2019",
   database: "elunch_1",
 });
-
 // cookie parser
 app.use(cookieParser());
-
 connection.connect();
-
 app.get("/", (req, res) => {
   res.render("index");
 });
-
 // this is for registration
 app.post("/registration", (req, res) => {
   if (!req.body.Email || !req.body.Password || !req.body.Password2) {
     return res.json("błąd:  Musisz wypełnić wszystkie  trzy pola");
   }
-
   // verification
   function Store(pass) {
     var verify = Math.floor(Math.random() * 10000000 + 1);
@@ -211,37 +198,8 @@ app.post("/login", (req, res) => {
         return res.json({
           msg: "ERROR",
         });
-      } else {
-<<<<<<< HEAD
-        console.log("dane z bazy: " + JSON.stringify(result));
-
-        if (Object.keys(result).length) {
-          var hash = result[0].password;
-          var active = result[0].active;
-          console.log("hash: " + hash);
-          console.log("active: " + active);
-          if (active) {
-            bcrypt.compare(pass, hash, function (err, res) {
-              if (err) {
-                return res.json({
-                  msg: "ERROR",
-                });
-              }
-              if (res==true){
-                LoginSuccess();
-              } else {
-                LoginFailed();
-              }
-              
-            });
-          } else {
-            LoginFailed();
-          }
-        } else{
-          console.log("błąd:  zły adres email");
-           res.json({
-            msg: "ERROR",
-=======
+      } else
+       {
         var hash = result[0].password;
         var active = result[0].active;
         console.log("hash: " + hash);
@@ -258,7 +216,6 @@ app.post("/login", (req, res) => {
             }else {
               LoginFailed();
             }
->>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
           });
 
         }
@@ -378,15 +335,10 @@ app.post("/newpassword", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-<<<<<<< HEAD
-            res.cookie("UserInfo", userdata);
-            res.json("Hasło do twojego konta zostało zmienione konto");
-=======
             res.cookie("UserInfo", userdata, {maxAge: 360000});
             res.json(
               "Hasło do twojego konta zostało zmienione konto"
             );
->>>>>>> 45eb1adba42536ab8ccea2106cf94ac5846ac2c5
             console.log("Your Mail Send Successfully");
           }
         });
