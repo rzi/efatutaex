@@ -4,8 +4,9 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
   
+<<<<<<< HEAD
+=======
     {
       "name": "Launch Chrome",
       "request": "launch",
@@ -19,6 +20,7 @@
 
 
 
+>>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
     {
       "type": "pwa-chrome",
       "request": "launch",

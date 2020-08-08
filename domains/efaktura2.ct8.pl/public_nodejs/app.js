@@ -5,7 +5,7 @@ const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 const app = express();
 const nodemailer = require("nodemailer");
-const { json } = require("body-parser");
+const fetch = require("node-fetch");
 
 // parser for forms undefined problem when submit form
 app.use(
@@ -14,19 +14,22 @@ app.use(
   })
 );
 app.use(bodyParser.json());
+
 // views
 app.set("view engine", "ejs");
 app.set("views", "views");
+
 var transporter = nodemailer.createTransport({
   host: "smtp.wp.pl",
   port: 587,
   auth: {
     user: "rafal_zietak@wp.pl",
-    pass: "",
+    pass: "Klucze2020!3",
   },
   //debug: true, // show debug output
   logger: true, // log information in console
 });
+
 transporter.verify(function (error, success) {
   if (error) {
     console.log(error);
@@ -41,17 +44,22 @@ const connection = mysql.createConnection({
   password: "Bazapi2019",
   database: "elunch_1",
 });
+
 // cookie parser
 app.use(cookieParser());
+
 connection.connect();
+
 app.get("/", (req, res) => {
   res.render("index");
 });
+
 // this is for registration
 app.post("/registration", (req, res) => {
   if (!req.body.Email || !req.body.Password || !req.body.Password2) {
     return res.json("błąd:  Musisz wypełnić wszystkie  trzy pola");
   }
+
   // verification
   function Store(pass) {
     var verify = Math.floor(Math.random() * 10000000 + 1);
@@ -60,8 +68,8 @@ app.post("/registration", (req, res) => {
       from: "rafal_zietak@wp.pl", // sender this is your email here
       to: `${req.body.Email}`, // receiver email2
       subject: "Weryfikacja konta w serwisie efaktura",
-      html: `<h1>Cześć, kliknij na link <h1><br>git sta<p> Link aktywacyjny.</p>
-        <br><a href="http://localhost:3000/verification/?verify=${verify}">Kliknij aby aktywować twoje konto w serwisie efaktura.ct8.pl</a>`,
+      html: `<h1>Cześć, kliknij na link <h1><br><p> Link aktywacyjny.</p>
+        <br><a href="http://efaktura2.ct8.pl/verification/?verify=${verify}">Kliknij aby aktywować twoje konto w serwisie efaktura.ct8.pl</a>`,
     };
     // store data
 
@@ -82,7 +90,7 @@ app.post("/registration", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata, {maxAge: 360000});
+            res.cookie("UserInfo", userdata, { maxAge: 360000 });
             res.json(
               "Mail z linkiem aktywacyjnym został wysłany <br> przedź do swojej skrzynki pocztowej i aktywuj konto"
             );
@@ -104,13 +112,14 @@ app.post("/registration", (req, res) => {
     });
   });
 });
+
 // verification
 app.get("/verification/", (req, res) => {
-  function activateAccount(verifyFromLink) {
-    if (verifyFromDB == verifyFromLink) {
+  function activateAccount(verification) {
+    if (verification == req.query.verify) {
       connection.query(
-        "UPDATE verify SET active = 'true' WHERE verification =?" ,
-        verifyFromLink ,
+        "UPDATE verify SET active = ?",
+        "true",
         (err, result) => {
           if (err) {
             console.log(err);
@@ -119,9 +128,9 @@ app.get("/verification/", (req, res) => {
               email: `${req.body.Email}`,
               verify: "TRUE",
             };
-            res.cookie("UserInfo", userdata, {maxAge: 360000});
+            res.cookie("UserInfo", userdata, { maxAge: 360000 });
             res.send(
-              "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://localhost:3000'>do strony głównej</a>"
+              "<h1>Sukcess: Użytkownik został pomyślnie aktywowany</h1><br><a href='http://efaktura2.ct8.pl'>do strony głównej</a>"
             );
           }
         }
@@ -135,33 +144,31 @@ app.get("/verification/", (req, res) => {
     "SELECT verify.verification FROM verify WHERE email = ?",
     req.cookies.UserInfo.email,
     (err, result) => {
-      console.log("Object.keys(result).length: " + Object.keys(result).length)
       if (err) {
         console.log(err);
       } else {
-        var verifyFromLink = req.query.verify;
-        var verifyFromDB = result[0].verification;
-        console.log("verifyFromLink " + verifyFromLink);
-        console.log("verifyFromDB " + verifyFromDB);
-        if (verifyFromLink == verifyFromDB) {
-          activateAccount(verifyFromLink);
+        var verify1 = req.query.verify;
+        var verify2 = result[0].verification;
+        console.log("verify1 " + verify1);
+        console.log("verify2 " + verify2);
+        if (verify1 == verify2) {
+          activateAccount(result[0].verification);
         } else {
           res.send(
-            `                               `
+            "<h2>Błąd rejestracji: Użytkownik o podanym adresie email już istnieje, nie można ponownie zarejestrować uzytkownika o takim samym emailu<br>Jeśli zapomniałeś hasło kliknij w link reset hasła  <a href='http://efaktura2.ct8.pl/'> tutaj w przyszłości będzie link do resetu hasła</a> <br><br><a href='http://efaktura2.ct8.pl'>Przejdź do strony głównej</a></h2>"
           );
         }
       }
     }
   );
 });
+
 app.get("/dashboard", (req, res) => {
   res.render("dashboard");
 });
+
 app.get("/login", (req, res) => {
   res.render("login");
-});
-app.get("/registration", (req, res) => {
-  res.render("registration");
 });
 app.post("/login", (req, res) => {
   var email = req.body.Email;
@@ -172,18 +179,17 @@ app.post("/login", (req, res) => {
       email: `${req.body.Email}`,
       verify: "TRUE",
     };
-    res.cookie("UserInfo", userdata, {maxAge: 360000});
+    res.cookie("UserInfo", userdata, { maxAge: 360000 });
     res.json({
       verify: "true",
     });
   }
-
   function LoginFailed() {
     let userdata = {
       email: `${req.body.Email}`,
       verify: "FALSE",
     };
-    res.cookie("UserInfo", userdata,  {maxAge: 360000});
+    res.cookie("UserInfo", userdata, { maxAge: 360000 });
     res.json({
       verify: "false",
     });
@@ -194,22 +200,14 @@ app.post("/login", (req, res) => {
     email,
     (err, result) => {
       if (err) {
-        //console.log(err);
-        console.log("dane błędu: " + JSON.stringify(err));
-        return res.json({
-          msg: "ERROR",
-        });
-      } else
-       {
+        console.log(err);
+        return res.json({ msg: "Nie ma takiego maila w bazie " });
+      } else {
         var hash = result[0].password;
         var active = result[0].active;
         console.log("hash: " + hash);
         console.log("active: " + active);
-<<<<<<< HEAD
-        if (active == "true") {
-=======
         if (active) {
->>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
           bcrypt.compare(pass, hash, function (err, res) {
             if (err) {
               return res.json({
@@ -217,32 +215,20 @@ app.post("/login", (req, res) => {
               });
             }
             if (res) {
-<<<<<<< HEAD
-              console.log("succes");
               LoginSuccess();
             } else {
               LoginFailed();
-              console.log("failed");
             }
           });
         } else {
-          return res.json({
-            msg: "ERROR",
-          });
+          LoginFailed();
         }
-=======
-              LoginSuccess();
-            }else {
-              LoginFailed();
-            }
-          });
-
-        }
-
->>>>>>> d02a9b5e3d205e5ab761cd3041391e36cbcba63c
       }
     }
   );
+});
+app.get("/registration", (req, res) => {
+  res.render("registration");
 });
 app.get("/reset", (req, res) => {
   // after click reset activation link from mail
@@ -283,7 +269,7 @@ app.post("/reset", (req, res) => {
           to: `${req.body.Email}`, // receiver email2
           subject: "reset hasła w serwisie efaktura",
           html: `<h2>Cześć, kliknij na link aby zresetować hasło <h2>
-        <br><a href="http://localhost:3000/reset/?code=${code}&email=${req.body.Email}">Kliknij tutaj </a>`,
+        <br><a href="http://efaktura2.ct8.pl/reset/?code=${code}&email=${req.body.Email}">Kliknij tutaj </a>`,
         };
         transporter.sendMail(mailOption, (error, info) => {
           if (error) {
@@ -355,10 +341,8 @@ app.post("/newpassword", (req, res) => {
             let userdata = {
               email: `${req.body.Email}`,
             };
-            res.cookie("UserInfo", userdata, {maxAge: 360000});
-            res.json(
-              "Hasło do twojego konta zostało zmienione konto"
-            );
+            res.cookie("UserInfo", userdata, { maxAge: 360000 });
+            res.json("Hasło do twojego konta zostało zmienione konto");
             console.log("Your Mail Send Successfully");
           }
         });
@@ -377,4 +361,4 @@ app.post("/newpassword", (req, res) => {
     });
   });
 });
-app.listen(3000);
+app.listen();
