@@ -1,15 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Account Verification Using Email</title>
+    <title>Moduł logowania</title>
 </head>
-
 <body>
-    <h1>Login</h1>
+    <h1>Logowanie</h1>
     <h1 id="msg"></h1>
     <form id="FormSub">
         <label for="email">Email : </label>
@@ -23,15 +21,12 @@
 
     <script>
         document.getElementById('FormSub').addEventListener('submit', Send);
-        console.log(" jestem w login")
 
         function Send(e) {
-            console.log(" jestem w send");
             e.preventDefault();
             var email = document.querySelector('#email').value;
             var pass = document.querySelector('#password').value;
             if (email.length > 1 && pass.length > 1) {
-                console.log(" jestem w fetch");
                 fetch('http://localhost:3000/login', {
                         method: 'post',
                         headers: {
@@ -58,5 +53,4 @@
         }
     </script>
 </body>
-
 </html>

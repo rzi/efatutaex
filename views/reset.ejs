@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 
 <head>
     <meta charset="UTF-8">
@@ -7,9 +7,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Reset hasła</title>
 </head>
-
 <body>
-    <h1>Login</h1>
+    <h1>Reset hasła</h1>
     <h1 id="msg"></h1>
     <form id="FormSub">
         <label for="email">Email : </label>
@@ -22,7 +21,6 @@
 
     <script>
         document.getElementById('FormSub').addEventListener('submit', Send);
-        console.log(" jestem w reset")
 
         function Send(e) {
             console.log(" jestem w send resetu");
@@ -30,7 +28,6 @@
             var email = document.querySelector('#email').value;
             
             if (email.length > 1 ) {
-                console.log(" jestem w fetch resetu");
                 fetch('http://localhost:3000/reset', {
                         method: 'post',
                         headers: {
