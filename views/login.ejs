@@ -48,7 +48,7 @@
                         if (data.verify === "true") {
                             window.open('/dashboard', '_self');
                         } else {
-                            document.getElementById('msg').innerHTML = "Niezgodne login lub hasło, lub użytkownik nie aktywowany";
+                            document.getElementById('msg').innerHTML = data.msg;
                         }
                     })
 

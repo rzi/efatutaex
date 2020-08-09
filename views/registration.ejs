@@ -46,7 +46,7 @@
           .then((res) => res.json())
           .then(data => {
             console.log(data)
-            document.getElementById('msg').innerHTML = data;
+            document.getElementById('msg').innerHTML = data.msg;
             document.querySelector('#email').value = "";
             document.querySelector('#password').value = "";
             document.querySelector('#password2').value = "";
